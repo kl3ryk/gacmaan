@@ -611,6 +611,74 @@ function unionPolygons(polygons) {
   return result;
 }
 
+// Clip a hole polygon to the plate boundaries with a tiny safety margin to ensure watertight triangulation
+function clipHoleToPlate(hole, plateWidth, plateHeight, margin = 0.1) {
+  if (typeof ClipperLib === 'undefined') {
+    return [hole];
+  }
+  
+  // Quick check: if the hole is already fully inside, return as-is
+  let fullyInside = true;
+  for (let i = 0; i < hole.length; i++) {
+    const pt = hole[i];
+    if (pt[0] < margin || pt[0] > plateWidth - margin || pt[1] < margin || pt[1] > plateHeight - margin) {
+      fullyInside = false;
+      break;
+    }
+  }
+  
+  if (fullyInside) {
+    return [hole];
+  }
+  
+  const scale = 10000;
+  const clipper = new ClipperLib.Clipper();
+  
+  const subjPath = hole.map(pt => ({
+    X: Math.round(pt[0] * scale),
+    Y: Math.round(pt[1] * scale)
+  }));
+  clipper.AddPath(subjPath, ClipperLib.PolyType.ptSubject, true);
+  
+  const clipPath = [
+    { X: Math.round(margin * scale), Y: Math.round(margin * scale) },
+    { X: Math.round((plateWidth - margin) * scale), Y: Math.round(margin * scale) },
+    { X: Math.round((plateWidth - margin) * scale), Y: Math.round((plateHeight - margin) * scale) },
+    { X: Math.round(margin * scale), Y: Math.round((plateHeight - margin) * scale) }
+  ];
+  clipper.AddPath(clipPath, ClipperLib.PolyType.ptClip, true);
+  
+  const solution = new ClipperLib.Paths();
+  const success = clipper.Execute(
+    ClipperLib.ClipType.ctIntersection,
+    solution,
+    ClipperLib.PolyFillType.pftNonZero,
+    ClipperLib.PolyFillType.pftNonZero
+  );
+  
+  if (!success || solution.length === 0) {
+    return [];
+  }
+  
+  const result = [];
+  for (let k = 0; k < solution.length; k++) {
+    const singlePath = solution[k];
+    const poly = [];
+    for (let i = 0; i < singlePath.length; i++) {
+      poly.push([singlePath[i].X / scale, singlePath[i].Y / scale]);
+    }
+    if (poly.length > 0) {
+      const first = poly[0];
+      const last = poly[poly.length - 1];
+      if (Math.hypot(last[0] - first[0], last[1] - first[1]) > 1e-6) {
+        poly.push([first[0], first[1]]);
+      }
+      result.push(poly);
+    }
+  }
+  return result;
+}
+
 // Compute the entire template layout and return dimensions & cutouts in mm
 function computeLayout() {
   const activeChars = getActiveCharacters();
@@ -687,7 +755,10 @@ function computeLayout() {
     // 5. Union overlapping loops of the character using ClipperLib
     const unionedHoles = unionPolygons(charHoles);
     unionedHoles.forEach(hole => {
-      holes.push(hole);
+      const clipped = clipHoleToPlate(hole, plateWidth, plateHeight);
+      clipped.forEach(ch => {
+        holes.push(ch);
+      });
     });
   });
   
