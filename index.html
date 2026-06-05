@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Szablonownik CNC & 3D - Generator Szablonów</title>
+  <meta name="description" content="Parametryczny generator szablonów stencil (STL, DXF, SVG) z szerokością linii 6.2mm dla druku 3D i frezowania.">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    // Prevent FOUC (Flash of Unstyled Content) for dark mode
+    {
+      const colorScheme = localStorage.getItem("color-scheme") || "dark"; // default dark
+      document.documentElement.setAttribute("data-theme", colorScheme);
+    }
+  </script>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="logo">
+        <span class="icon">📐</span>
+        <h1>Szablonownik<span>CNC & 3D</span></h1>
+      </div>
+      <div class="theme-toggle">
+        <button id="theme-btn" aria-label="Przełącz motyw" class="btn-icon">
+          <span class="theme-icon-dark">🌙</span>
+          <span class="theme-icon-light">☀️</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <!-- CONTROL PANEL -->
+      <section class="control-panel glass">
+        <h2>Ustawienia Szablonu</h2>
+        
+        <div class="control-group">
+          <h3>Zestaw Znaków</h3>
+          <div class="character-selectors">
+            <label class="checkbox-container">
+              <input type="checkbox" id="chk-latin" checked>
+              <span class="checkmark"></span>
+              Alfabet (A-Z)
+            </label>
+            <label class="checkbox-container">
+              <input type="checkbox" id="chk-numbers" checked>
+              <span class="checkmark"></span>
+              Cyfry (0-9)
+            </label>
+            <label class="checkbox-container">
+              <input type="checkbox" id="chk-katakana" checked>
+              <span class="checkmark"></span>
+              Katakana (Japonia)
+            </label>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h3>Niestandardowy Tekst (Opcjonalnie)</h3>
+          <input type="text" id="custom-text" placeholder="Wpisz własne znaki..." class="text-input">
+          <small class="help-text">Wpisz znaki, aby wygenerować dedykowany szablon tylko z nimi.</small>
+        </div>
+
+        <div class="control-group">
+          <h3>Wymiary Znaku (mm)</h3>
+          <div class="slider-container">
+            <div class="slider-header">
+              <label for="param-stroke-width">Szerokość linii (frezu)</label>
+              <span class="value-display" id="val-stroke-width">6.2 mm</span>
+            </div>
+            <input type="range" id="param-stroke-width" min="1.0" max="15.0" step="0.1" value="6.2">
+          </div>
+
+          <div class="slider-container">
+            <div class="slider-header">
+              <label for="param-char-height">Wysokość znaku</label>
+              <span class="value-display" id="val-char-height">50 mm</span>
+            </div>
+            <input type="range" id="param-char-height" min="15" max="150" step="1" value="50">
+          </div>
+
+          <div class="slider-container">
+            <div class="slider-header">
+              <label for="param-char-width">Szerokość znaku</label>
+              <span class="value-display" id="val-char-width">35 mm</span>
+            </div>
+            <input type="range" id="param-char-width" min="10" max="100" step="1" value="35">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h3>Konfiguracja Stencil</h3>
+          <div class="slider-container">
+            <div class="slider-header">
+              <label for="param-bridge-width">Szerokość mostka (gap)</label>
+              <span class="value-display" id="val-bridge-width">4.0 mm</span>
+            </div>
+            <input type="range" id="param-bridge-width" min="1.0" max="12.0" step="0.1" value="4.0">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h3>Obszar Roboczy CNC (mm)</h3>
+          <div class="slider-container">
+            <div class="slider-header">
+              <label for="param-cnc-width">Limit szerokości X</label>
+              <span class="value-display" id="val-cnc-width">300 mm</span>
+            </div>
+            <input type="range" id="param-cnc-width" min="100" max="1200" step="10" value="300">
+          </div>
+
+          <div class="slider-container">
+            <div class="slider-header">
+              <label for="param-cnc-height">Limit wysokości Y</label>
+              <span class="value-display" id="val-cnc-height">200 mm</span>
+            </div>
+            <input type="range" id="param-cnc-height" min="100" max="1200" step="10" value="200">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h3>Płyta Szablonu (mm)</h3>
+          <div class="slider-container">
+            <div class="slider-header">
+              <label for="param-plate-thickness">Grubość płyty (z-height)</label>
+              <span class="value-display" id="val-plate-thickness">5.0 mm</span>
+            </div>
+            <input type="range" id="param-plate-thickness" min="1.0" max="20.0" step="0.5" value="5.0">
+          </div>
+
+          <div class="slider-container">
+            <div class="slider-header">
+              <label for="param-plate-padding">Margines zewnętrzny</label>
+              <span class="value-display" id="val-plate-padding">10 mm</span>
+            </div>
+            <input type="range" id="param-plate-padding" min="5" max="50" step="1" value="10">
+          </div>
+          
+          <div class="slider-container">
+            <div class="slider-header">
+              <label for="param-char-spacing">Odstęp między znakami</label>
+              <span class="value-display" id="val-char-spacing">10 mm</span>
+            </div>
+            <input type="range" id="param-char-spacing" min="2" max="30" step="1" value="10">
+          </div>
+        </div>
+
+        <div class="export-actions">
+          <button id="btn-export-stl" class="btn btn-primary">
+            <span class="btn-icon">💾</span> Eksportuj STL (3D Print)
+          </button>
+          <button id="btn-export-dxf" class="btn btn-secondary">
+            <span class="btn-icon">📐</span> Eksportuj DXF (CNC)
+          </button>
+          <button id="btn-export-svg" class="btn btn-secondary">
+            <span class="btn-icon">🖼️</span> Eksportuj SVG (Wektory)
+          </button>
+        </div>
+      </section>
+
+      <!-- PREVIEW AREA -->
+      <section class="preview-area">
+        <div class="tabs">
+          <button class="tab-btn active" id="tab-2d">Rysunek Płaski (2D)</button>
+          <button class="tab-btn" id="tab-3d">Model 3D (Wizualizacja)</button>
+        </div>
+
+        <div class="preview-container glass">
+          <!-- CNC Warning Banner -->
+          <div id="warning-cnc" class="warning-box" style="display: none;">
+            <span class="warning-icon">⚠️</span>
+            <span class="warning-text">Szablon przekracza obszar roboczy CNC!</span>
+          </div>
+
+          <!-- 2D Canvas Container -->
+          <div id="container-2d" class="preview-box active">
+            <div class="canvas-wrapper">
+              <canvas id="stencil-canvas"></canvas>
+            </div>
+            <div class="preview-stats">
+              <span id="stat-plate-dim">Rozmiar płyty: 0 x 0 mm</span>
+              <span id="stat-char-count">Liczba znaków: 0</span>
+            </div>
+          </div>
+
+          <!-- 3D WebGL Container -->
+          <div id="container-3d" class="preview-box">
+            <div id="webgl-canvas-container"></div>
+            <div class="instructions3d">
+              <span>🖱️ Lewy przycisk: Obracanie</span>
+              <span>🖱️ Prawy przycisk: Przesuwanie</span>
+              <span>⚙️ Kółko myszy: Przybliżanie</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>&copy; 2026 Szablonownik CNC. Stworzone dla frezarek i drukarek 3D.</p>
+    </footer>
+  </div>
+
+  <!-- External Libraries -->
+  <!-- Three.js for 3D previews -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- OrbitControls for camera manipulation (matching r128 global script) -->
+  <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <!-- Earcut for polygon triangulation (extrusion to STL) -->
+  <script src="earcut.min.js"></script>
+  
+  <!-- App scripts -->
+  <script src="font_data.js"></script>
+  <script src="clipper.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
