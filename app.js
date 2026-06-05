@@ -129,26 +129,56 @@ function setupEventListeners() {
     if (is3DInitialized) update3DLightAndBackground();
   });
   
-  // Inputs
+  // Inputs (Dual Binding: range slider & numeric input field)
   const inputParams = [
-    { el: elements.paramStrokeWidth, key: 'strokeWidth', valEl: elements.valStrokeWidth, suffix: ' mm' },
-    { el: elements.paramCharHeight, key: 'charHeight', valEl: elements.valCharHeight, suffix: ' mm' },
-    { el: elements.paramCharWidth, key: 'charWidth', valEl: elements.valCharWidth, suffix: ' mm' },
-    { el: elements.paramBridgeWidth, key: 'bridgeWidth', valEl: elements.valBridgeWidth, suffix: ' mm' },
-    { el: elements.paramPlateWidth, key: 'plateWidth', valEl: elements.valPlateWidth, suffix: ' mm' },
-    { el: elements.paramPlateHeight, key: 'plateHeight', valEl: elements.valPlateHeight, suffix: ' mm' },
-    { el: elements.paramPlateThickness, key: 'plateThickness', valEl: elements.valPlateThickness, suffix: ' mm' },
-    { el: elements.paramPlatePadding, key: 'platePadding', valEl: elements.valPlatePadding, suffix: ' mm' },
-    { el: elements.paramCharSpacing, key: 'charSpacing', valEl: elements.valCharSpacing, suffix: ' mm' },
-    { el: elements.paramCncWidth, key: 'cncWidth', valEl: elements.valCncWidth, suffix: ' mm' },
-    { el: elements.paramCncHeight, key: 'cncHeight', valEl: elements.valCncHeight, suffix: ' mm' }
+    { el: elements.paramStrokeWidth, key: 'strokeWidth', valEl: elements.valStrokeWidth },
+    { el: elements.paramCharHeight, key: 'charHeight', valEl: elements.valCharHeight },
+    { el: elements.paramCharWidth, key: 'charWidth', valEl: elements.valCharWidth },
+    { el: elements.paramBridgeWidth, key: 'bridgeWidth', valEl: elements.valBridgeWidth },
+    { el: elements.paramPlateWidth, key: 'plateWidth', valEl: elements.valPlateWidth },
+    { el: elements.paramPlateHeight, key: 'plateHeight', valEl: elements.valPlateHeight },
+    { el: elements.paramPlateThickness, key: 'plateThickness', valEl: elements.valPlateThickness },
+    { el: elements.paramPlatePadding, key: 'platePadding', valEl: elements.valPlatePadding },
+    { el: elements.paramCharSpacing, key: 'charSpacing', valEl: elements.valCharSpacing },
+    { el: elements.paramCncWidth, key: 'cncWidth', valEl: elements.valCncWidth },
+    { el: elements.paramCncHeight, key: 'cncHeight', valEl: elements.valCncHeight }
   ];
   
   inputParams.forEach(param => {
+    // Range slider input listener
     param.el.addEventListener('input', (e) => {
-      state[param.key] = parseFloat(e.target.value);
-      param.valEl.textContent = state[param.key].toFixed(1) + param.suffix;
+      const val = parseFloat(e.target.value);
+      if (isNaN(val)) return;
+      state[param.key] = val;
+      param.valEl.value = val;
       renderAll();
+    });
+    
+    // Numeric input listener
+    param.valEl.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      if (isNaN(val)) return;
+      
+      const min = parseFloat(param.el.min);
+      const max = parseFloat(param.el.max);
+      const clampedVal = Math.max(min, Math.min(max, val));
+      
+      state[param.key] = clampedVal;
+      param.el.value = clampedVal;
+      renderAll();
+    });
+    
+    // Input blur listener to restore valid value if left empty/invalid
+    param.valEl.addEventListener('blur', (e) => {
+      let val = parseFloat(e.target.value);
+      if (isNaN(val)) {
+        e.target.value = state[param.key];
+        return;
+      }
+      const min = parseFloat(param.el.min);
+      const max = parseFloat(param.el.max);
+      const clampedVal = Math.max(min, Math.min(max, val));
+      e.target.value = clampedVal;
     });
   });
   
@@ -223,37 +253,37 @@ function setupEventListeners() {
 
 function updateSlidersFromState() {
   elements.paramStrokeWidth.value = state.strokeWidth;
-  elements.valStrokeWidth.textContent = state.strokeWidth.toFixed(1) + ' mm';
+  elements.valStrokeWidth.value = state.strokeWidth;
   
   elements.paramCharHeight.value = state.charHeight;
-  elements.valCharHeight.textContent = state.charHeight.toFixed(1) + ' mm';
+  elements.valCharHeight.value = state.charHeight;
   
   elements.paramCharWidth.value = state.charWidth;
-  elements.valCharWidth.textContent = state.charWidth.toFixed(1) + ' mm';
+  elements.valCharWidth.value = state.charWidth;
   
   elements.paramBridgeWidth.value = state.bridgeWidth;
-  elements.valBridgeWidth.textContent = state.bridgeWidth.toFixed(1) + ' mm';
+  elements.valBridgeWidth.value = state.bridgeWidth;
   
   elements.paramPlateWidth.value = state.plateWidth;
-  elements.valPlateWidth.textContent = state.plateWidth.toFixed(1) + ' mm';
+  elements.valPlateWidth.value = state.plateWidth;
   
   elements.paramPlateHeight.value = state.plateHeight;
-  elements.valPlateHeight.textContent = state.plateHeight.toFixed(1) + ' mm';
+  elements.valPlateHeight.value = state.plateHeight;
   
   elements.paramPlateThickness.value = state.plateThickness;
-  elements.valPlateThickness.textContent = state.plateThickness.toFixed(1) + ' mm';
+  elements.valPlateThickness.value = state.plateThickness;
   
   elements.paramPlatePadding.value = state.platePadding;
-  elements.valPlatePadding.textContent = state.platePadding.toFixed(1) + ' mm';
+  elements.valPlatePadding.value = state.platePadding;
   
   elements.paramCharSpacing.value = state.charSpacing;
-  elements.valCharSpacing.textContent = state.charSpacing.toFixed(1) + ' mm';
+  elements.valCharSpacing.value = state.charSpacing;
   
   elements.paramCncWidth.value = state.cncWidth;
-  elements.valCncWidth.textContent = state.cncWidth.toFixed(1) + ' mm';
+  elements.valCncWidth.value = state.cncWidth;
   
   elements.paramCncHeight.value = state.cncHeight;
-  elements.valCncHeight.textContent = state.cncHeight.toFixed(1) + ' mm';
+  elements.valCncHeight.value = state.cncHeight;
   
   elements.paramJoinType.value = state.joinType;
 }

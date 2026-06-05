@@ -360,6 +360,54 @@ body {
   color: var(--accent-color);
 }
 
+.input-display-wrap {
+  display: inline-flex;
+  align-items: center;
+  background: var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.input-display-wrap:focus-within {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.25);
+  background: var(--bg-color);
+}
+
+.val-input {
+  background: transparent;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: monospace;
+  color: var(--accent-color);
+  width: 42px;
+  text-align: right;
+  outline: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Hide standard HTML5 number input spinners */
+.val-input::-webkit-outer-spin-button,
+.val-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.val-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.val-unit {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-left: 2px;
+  font-family: monospace;
+}
+
 /* Custom Range Slider */
 input[type="range"] {
   -webkit-appearance: none;

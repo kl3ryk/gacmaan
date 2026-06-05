@@ -70,7 +70,10 @@
           <div class="slider-container">
             <div class="slider-header">
               <label for="param-stroke-width">Szerokość linii (frezu)</label>
-              <span class="value-display" id="val-stroke-width">6.2 mm</span>
+              <div class="input-display-wrap">
+                <input type="number" id="val-stroke-width" class="val-input" min="1.0" max="15.0" step="0.1" value="6.2">
+                <span class="val-unit">mm</span>
+              </div>
             </div>
             <input type="range" id="param-stroke-width" min="1.0" max="15.0" step="0.1" value="6.2">
           </div>
@@ -78,7 +81,10 @@
           <div class="slider-container">
             <div class="slider-header">
               <label for="param-char-height">Wysokość znaku</label>
-              <span class="value-display" id="val-char-height">50 mm</span>
+              <div class="input-display-wrap">
+                <input type="number" id="val-char-height" class="val-input" min="15" max="150" step="1" value="50">
+                <span class="val-unit">mm</span>
+              </div>
             </div>
             <input type="range" id="param-char-height" min="15" max="150" step="1" value="50">
           </div>
@@ -86,7 +92,10 @@
           <div class="slider-container">
             <div class="slider-header">
               <label for="param-char-width">Szerokość znaku</label>
-              <span class="value-display" id="val-char-width">35 mm</span>
+              <div class="input-display-wrap">
+                <input type="number" id="val-char-width" class="val-input" min="10" max="100" step="1" value="35">
+                <span class="val-unit">mm</span>
+              </div>
             </div>
             <input type="range" id="param-char-width" min="10" max="100" step="1" value="35">
           </div>
@@ -107,7 +116,10 @@
           <div class="slider-container">
             <div class="slider-header">
               <label for="param-bridge-width">Szerokość mostka (gap)</label>
-              <span class="value-display" id="val-bridge-width">4.0 mm</span>
+              <div class="input-display-wrap">
+                <input type="number" id="val-bridge-width" class="val-input" min="1.0" max="12.0" step="0.1" value="4.0">
+                <span class="val-unit">mm</span>
+              </div>
             </div>
             <input type="range" id="param-bridge-width" min="1.0" max="12.0" step="0.1" value="4.0">
           </div>
@@ -118,7 +130,10 @@
           <div class="slider-container">
             <div class="slider-header">
               <label for="param-cnc-width">Limit szerokości X</label>
-              <span class="value-display" id="val-cnc-width">300 mm</span>
+              <div class="input-display-wrap">
+                <input type="number" id="val-cnc-width" class="val-input" min="100" max="1200" step="10" value="300">
+                <span class="val-unit">mm</span>
+              </div>
             </div>
             <input type="range" id="param-cnc-width" min="100" max="1200" step="10" value="300">
           </div>
@@ -126,7 +141,10 @@
           <div class="slider-container">
             <div class="slider-header">
               <label for="param-cnc-height">Limit wysokości Y</label>
-              <span class="value-display" id="val-cnc-height">200 mm</span>
+              <div class="input-display-wrap">
+                <input type="number" id="val-cnc-height" class="val-input" min="100" max="1200" step="10" value="200">
+                <span class="val-unit">mm</span>
+              </div>
             </div>
             <input type="range" id="param-cnc-height" min="100" max="1200" step="10" value="200">
           </div>
@@ -138,7 +156,10 @@
           <div class="slider-container">
             <div class="slider-header">
               <label for="param-plate-width">Szerokość płyty (X)</label>
-              <span class="value-display" id="val-plate-width">300 mm</span>
+              <div class="input-display-wrap">
+                <input type="number" id="val-plate-width" class="val-input" min="100" max="1200" step="10" value="300">
+                <span class="val-unit">mm</span>
+              </div>
             </div>
             <input type="range" id="param-plate-width" min="100" max="1200" step="10" value="300">
           </div>
@@ -146,7 +167,10 @@
           <div class="slider-container">
             <div class="slider-header">
               <label for="param-plate-height">Wysokość płyty (Y)</label>
-              <span class="value-display" id="val-plate-height">200 mm</span>
+              <div class="input-display-wrap">
+                <input type="number" id="val-plate-height" class="val-input" min="100" max="1200" step="10" value="200">
+                <span class="val-unit">mm</span>
+              </div>
             </div>
             <input type="range" id="param-plate-height" min="100" max="1200" step="10" value="200">
           </div>
@@ -154,7 +178,10 @@
           <div class="slider-container">
             <div class="slider-header">
               <label for="param-plate-thickness">Grubość płyty (z-height)</label>
-              <span class="value-display" id="val-plate-thickness">5.0 mm</span>
+              <div class="input-display-wrap">
+                <input type="number" id="val-plate-thickness" class="val-input" min="1.0" max="20.0" step="0.5" value="5.0">
+                <span class="val-unit">mm</span>
+              </div>
             </div>
             <input type="range" id="param-plate-thickness" min="1.0" max="20.0" step="0.5" value="5.0">
           </div>
@@ -162,7 +189,10 @@
           <div class="slider-container">
             <div class="slider-header">
               <label for="param-plate-padding">Margines zewnętrzny</label>
-              <span class="value-display" id="val-plate-padding">10 mm</span>
+              <div class="input-display-wrap">
+                <input type="number" id="val-plate-padding" class="val-input" min="5" max="50" step="1" value="10">
+                <span class="val-unit">mm</span>
+              </div>
             </div>
             <input type="range" id="param-plate-padding" min="5" max="50" step="1" value="10">
           </div>
@@ -170,7 +200,10 @@
           <div class="slider-container">
             <div class="slider-header">
               <label for="param-char-spacing">Odstęp między znakami</label>
-              <span class="value-display" id="val-char-spacing">10 mm</span>
+              <div class="input-display-wrap">
+                <input type="number" id="val-char-spacing" class="val-input" min="2" max="30" step="1" value="10">
+                <span class="val-unit">mm</span>
+              </div>
             </div>
             <input type="range" id="param-char-spacing" min="2" max="30" step="1" value="10">
           </div>
