@@ -392,8 +392,8 @@ function joinSegments(segments) {
   return polylines;
 }
 
-// Offset a polyline path to generate its 2D stroke outline loop of specified width
-function offsetPath(points, width) {
+// Manual fallback for offsetting a polyline path to generate its 2D stroke outline loop of specified width
+function offsetPathManual(points, width) {
   const half = width / 2;
   const n = points.length;
   if (n < 2) return [];
@@ -484,6 +484,49 @@ function offsetPath(points, width) {
   loop.push([leftPoints[0][0], leftPoints[0][1]]);
 
   return loop;
+}
+
+// Offset a polyline path using ClipperOffset to ensure 100% uniform stroke width everywhere
+function offsetPath(points, width) {
+  const n = points.length;
+  if (n < 2) return [];
+  if (typeof ClipperLib === 'undefined') {
+    // Fallback if Clipper is not loaded
+    const fallback = offsetPathManual(points, width);
+    return fallback.length > 0 ? [fallback] : [];
+  }
+  
+  const scale = 10000;
+  const co = new ClipperLib.ClipperOffset(5.0); // MiterLimit = 5.0 for clean sharp corners
+  
+  const path = points.map(pt => ({
+    X: Math.round(pt[0] * scale),
+    Y: Math.round(pt[1] * scale)
+  }));
+  
+  co.AddPath(path, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etOpenButt);
+  
+  const solution = new ClipperLib.Paths();
+  const delta = (width / 2) * scale;
+  co.Execute(solution, delta);
+  
+  const result = [];
+  for (let k = 0; k < solution.length; k++) {
+    const singlePath = solution[k];
+    const poly = [];
+    for (let i = 0; i < singlePath.length; i++) {
+      poly.push([singlePath[i].X / scale, singlePath[i].Y / scale]);
+    }
+    if (poly.length > 0) {
+      const first = poly[0];
+      const last = poly[poly.length - 1];
+      if (Math.hypot(last[0] - first[0], last[1] - first[1]) > 1e-6) {
+        poly.push([first[0], first[1]]);
+      }
+    }
+    result.push(poly);
+  }
+  return result;
 }
 
 // Union helper using ClipperLib to merge overlapping paths
@@ -600,10 +643,12 @@ function computeLayout() {
     // 4. Offset polylines to outline loops (slot width in mm)
     const charHoles = [];
     polylines.forEach(polyline => {
-      const outline = offsetPath(polyline, state.strokeWidth);
-      if (outline.length > 0) {
-        charHoles.push(outline);
-      }
+      const outlines = offsetPath(polyline, state.strokeWidth);
+      outlines.forEach(outline => {
+        if (outline.length > 0) {
+          charHoles.push(outline);
+        }
+      });
     });
     
     // 5. Union overlapping loops of the character using ClipperLib
