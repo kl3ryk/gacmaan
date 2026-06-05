@@ -838,8 +838,8 @@ function computeLayout() {
     const yBox = plateHeight - state.platePadding - (row + 1) * state.charHeight - row * state.charSpacing;
     
     // 1. Get subdivided segments in normalized grid coordinates
-    const isClosedChar = ['A', 'B', 'D', 'O', 'P', 'Q', 'R', '0', '4', '6', '8', '9', 'ロ'].includes(char);
-    const useBridges = !state.skipOpenBridges || isClosedChar;
+    const openLatinChars = ['C', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+    const useBridges = !state.skipOpenBridges || !openLatinChars.includes(char);
     const splitSegs = getSubdividedSegments(charData.segments, useBridges ? (charData.bridges || []) : [], state.charHeight, state.bridgeWidth);
     
     // 2. Scale segments to millimeter coordinates
