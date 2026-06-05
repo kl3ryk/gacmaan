@@ -159,12 +159,17 @@ function setupEventListeners() {
       const val = parseFloat(e.target.value);
       if (isNaN(val)) return;
       
-      const min = parseFloat(param.el.min);
-      const max = parseFloat(param.el.max);
-      const clampedVal = Math.max(min, Math.min(max, val));
+      let minVal = 0.1;
+      if (param.key === 'charHeight' || param.key === 'charWidth' || param.key === 'plateWidth' || param.key === 'plateHeight' || param.key === 'cncWidth' || param.key === 'cncHeight') {
+        minVal = 1.0;
+      } else if (param.key === 'bridgeWidth' || param.key === 'platePadding' || param.key === 'charSpacing') {
+        minVal = 0.0;
+      }
+      
+      const clampedVal = Math.max(minVal, val);
       
       state[param.key] = clampedVal;
-      param.el.value = clampedVal;
+      param.el.value = clampedVal; // Slider UI will handle value > max gracefully
       renderAll();
     });
     
@@ -175,9 +180,13 @@ function setupEventListeners() {
         e.target.value = state[param.key];
         return;
       }
-      const min = parseFloat(param.el.min);
-      const max = parseFloat(param.el.max);
-      const clampedVal = Math.max(min, Math.min(max, val));
+      let minVal = 0.1;
+      if (param.key === 'charHeight' || param.key === 'charWidth' || param.key === 'plateWidth' || param.key === 'plateHeight' || param.key === 'cncWidth' || param.key === 'cncHeight') {
+        minVal = 1.0;
+      } else if (param.key === 'bridgeWidth' || param.key === 'platePadding' || param.key === 'charSpacing') {
+        minVal = 0.0;
+      }
+      const clampedVal = Math.max(minVal, val);
       e.target.value = clampedVal;
     });
   });
