@@ -22,6 +22,7 @@ let state = {
   useKatakana: true,
   customText: "",
   joinType: 'round', // 'round', 'square', or 'miter'
+  skipOpenBridges: false,
   
   // Theme
   theme: 'dark'
@@ -65,6 +66,7 @@ const elements = {
   chkLatin: document.getElementById('chk-latin'),
   chkNumbers: document.getElementById('chk-numbers'),
   chkKatakana: document.getElementById('chk-katakana'),
+  chkSkipOpenBridges: document.getElementById('chk-skip-open-bridges'),
   customText: document.getElementById('custom-text'),
   
   paramStrokeWidth: document.getElementById('param-stroke-width'),
@@ -114,6 +116,12 @@ function init() {
   const storedTheme = localStorage.getItem("color-scheme") || "dark";
   state.theme = storedTheme;
   document.documentElement.setAttribute("data-theme", state.theme);
+  
+  // Initialize checkboxes from state
+  elements.chkLatin.checked = state.useLatin;
+  elements.chkNumbers.checked = state.useNumbers;
+  elements.chkKatakana.checked = state.useKatakana;
+  elements.chkSkipOpenBridges.checked = state.skipOpenBridges;
   
   setupEventListeners();
   updateSlidersFromState();
@@ -195,7 +203,8 @@ function setupEventListeners() {
   const checkboxes = [
     { el: elements.chkLatin, key: 'useLatin' },
     { el: elements.chkNumbers, key: 'useNumbers' },
-    { el: elements.chkKatakana, key: 'useKatakana' }
+    { el: elements.chkKatakana, key: 'useKatakana' },
+    { el: elements.chkSkipOpenBridges, key: 'skipOpenBridges' }
   ];
   
   checkboxes.forEach(cb => {
@@ -762,7 +771,9 @@ function computeLayout() {
     const yBox = plateHeight - state.platePadding - (row + 1) * state.charHeight - row * state.charSpacing;
     
     // 1. Get subdivided segments in normalized grid coordinates
-    const splitSegs = getSubdividedSegments(charData.segments, charData.bridges || [], state.charHeight, state.bridgeWidth);
+    const isClosedChar = ['A', 'B', 'D', 'O', 'P', 'Q', 'R', '0', '4', '6', '8', '9', 'ロ'].includes(char);
+    const useBridges = !state.skipOpenBridges || isClosedChar;
+    const splitSegs = getSubdividedSegments(charData.segments, useBridges ? (charData.bridges || []) : [], state.charHeight, state.bridgeWidth);
     
     // 2. Scale segments to millimeter coordinates
     const scaledSegs = splitSegs.map(seg => {
