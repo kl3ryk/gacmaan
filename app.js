@@ -727,6 +727,73 @@ function clipHoleToPlate(hole, plateWidth, plateHeight, margin = 0.1) {
   return result;
 }
 
+// Clip character holes to top/bottom baselines to keep slanted/rounded corners (e.g. in N, M) perfectly aligned
+function clipCharToBaselines(charHoles, yBox, charHeight) {
+  if (typeof ClipperLib === 'undefined' || charHoles.length === 0) {
+    return charHoles;
+  }
+  
+  const scale = 10000;
+  const clipper = new ClipperLib.Clipper();
+  
+  charHoles.forEach(poly => {
+    const path = poly.map(pt => ({
+      X: Math.round(pt[0] * scale),
+      Y: Math.round(pt[1] * scale)
+    }));
+    clipper.AddPath(path, ClipperLib.PolyType.ptSubject, true);
+  });
+  
+  let minX = Infinity;
+  let maxX = -Infinity;
+  charHoles.forEach(poly => {
+    poly.forEach(pt => {
+      if (pt[0] < minX) minX = pt[0];
+      if (pt[0] > maxX) maxX = pt[0];
+    });
+  });
+  
+  // Extend X bounds slightly to ensure no side clipping
+  const xMargin = 50.0;
+  const clipBox = [
+    { X: Math.round((minX - xMargin) * scale), Y: Math.round(yBox * scale) },
+    { X: Math.round((maxX + xMargin) * scale), Y: Math.round(yBox * scale) },
+    { X: Math.round((maxX + xMargin) * scale), Y: Math.round((yBox + charHeight) * scale) },
+    { X: Math.round((minX - xMargin) * scale), Y: Math.round((yBox + charHeight) * scale) }
+  ];
+  clipper.AddPath(clipBox, ClipperLib.PolyType.ptClip, true);
+  
+  const solution = new ClipperLib.Paths();
+  const success = clipper.Execute(
+    ClipperLib.ClipType.ctIntersection,
+    solution,
+    ClipperLib.PolyFillType.pftNonZero,
+    ClipperLib.PolyFillType.pftNonZero
+  );
+  
+  if (!success || solution.length === 0) {
+    return [];
+  }
+  
+  const result = [];
+  for (let k = 0; k < solution.length; k++) {
+    const singlePath = solution[k];
+    const poly = [];
+    for (let i = 0; i < singlePath.length; i++) {
+      poly.push([singlePath[i].X / scale, singlePath[i].Y / scale]);
+    }
+    if (poly.length > 0) {
+      const first = poly[0];
+      const last = poly[poly.length - 1];
+      if (Math.hypot(last[0] - first[0], last[1] - first[1]) > 1e-6) {
+        poly.push([first[0], first[1]]);
+      }
+      result.push(poly);
+    }
+  }
+  return result;
+}
+
 // Compute the entire template layout and return dimensions & cutouts in mm
 function computeLayout() {
   const activeChars = getActiveCharacters();
@@ -804,7 +871,11 @@ function computeLayout() {
     
     // 5. Union overlapping loops of the character using ClipperLib
     const unionedHoles = unionPolygons(charHoles);
-    unionedHoles.forEach(hole => {
+    
+    // 6. Clip character holes to top/bottom baselines to ensure flat baselines for N, M, etc.
+    const baselineClippedHoles = clipCharToBaselines(unionedHoles, yBox, state.charHeight);
+    
+    baselineClippedHoles.forEach(hole => {
       const clipped = clipHoleToPlate(hole, plateWidth, plateHeight);
       clipped.forEach(ch => {
         holes.push(ch);
