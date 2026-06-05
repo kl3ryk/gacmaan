@@ -20,6 +20,7 @@ let state = {
   useNumbers: true,
   useKatakana: true,
   customText: "",
+  joinType: 'round', // 'round', 'square', or 'miter'
   
   // Theme
   theme: 'dark'
@@ -96,6 +97,7 @@ const elements = {
   canvas: document.getElementById('stencil-canvas'),
   webglContainer: document.getElementById('webgl-canvas-container'),
   warningCnc: document.getElementById('warning-cnc'),
+  paramJoinType: document.getElementById('param-join-type'),
   
   statPlateDim: document.getElementById('stat-plate-dim'),
   statCharCount: document.getElementById('stat-char-count')
@@ -162,6 +164,12 @@ function setupEventListeners() {
   elements.customText.addEventListener('input', (e) => {
     state.customText = e.target.value;
     shouldFitCamera = true;
+    renderAll();
+  });
+  
+  // Join Type Dropdown
+  elements.paramJoinType.addEventListener('change', (e) => {
+    state.joinType = e.target.value;
     renderAll();
   });
   
@@ -233,6 +241,8 @@ function updateSlidersFromState() {
   
   elements.paramCncHeight.value = state.cncHeight;
   elements.valCncHeight.textContent = state.cncHeight.toFixed(1) + ' mm';
+  
+  elements.paramJoinType.value = state.joinType;
 }
 
 // Get active character list to generate
@@ -504,7 +514,14 @@ function offsetPath(points, width) {
     Y: Math.round(pt[1] * scale)
   }));
   
-  co.AddPath(path, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etOpenButt);
+  let joinType = ClipperLib.JoinType.jtRound; // Default round
+  if (state.joinType === 'miter') {
+    joinType = ClipperLib.JoinType.jtMiter;
+  } else if (state.joinType === 'square') {
+    joinType = ClipperLib.JoinType.jtSquare;
+  }
+  
+  co.AddPath(path, joinType, ClipperLib.EndType.etOpenButt);
   
   const solution = new ClipperLib.Paths();
   const delta = (width / 2) * scale;

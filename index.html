@@ -94,6 +94,16 @@
 
         <div class="control-group">
           <h3>Konfiguracja Stencil</h3>
+          
+          <div class="select-container" style="margin-bottom: 15px;">
+            <label for="param-join-type" style="display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Styl narożników (rogów)</label>
+            <select id="param-join-type" class="text-input" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(30, 41, 59, 0.5); color: var(--text-main); font-family: inherit; font-size: 0.9rem; cursor: pointer; outline: none; transition: border-color 0.2s;">
+              <option value="miter">Ostre (Miter)</option>
+              <option value="round" selected>Zaokrąglone (Okrągłe - pod frez)</option>
+              <option value="square">Ścięte (Płaskie / Ścięte)</option>
+            </select>
+          </div>
+
           <div class="slider-container">
             <div class="slider-header">
               <label for="param-bridge-width">Szerokość mostka (gap)</label>
