@@ -134,6 +134,23 @@
 
         <div class="control-group">
           <h3>Płyta Szablonu (mm)</h3>
+          
+          <div class="slider-container">
+            <div class="slider-header">
+              <label for="param-plate-width">Szerokość płyty (X)</label>
+              <span class="value-display" id="val-plate-width">300 mm</span>
+            </div>
+            <input type="range" id="param-plate-width" min="100" max="1200" step="10" value="300">
+          </div>
+
+          <div class="slider-container">
+            <div class="slider-header">
+              <label for="param-plate-height">Wysokość płyty (Y)</label>
+              <span class="value-display" id="val-plate-height">200 mm</span>
+            </div>
+            <input type="range" id="param-plate-height" min="100" max="1200" step="10" value="200">
+          </div>
+
           <div class="slider-container">
             <div class="slider-header">
               <label for="param-plate-thickness">Grubość płyty (z-height)</label>

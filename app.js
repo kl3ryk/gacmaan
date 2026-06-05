@@ -6,10 +6,11 @@ let state = {
   charHeight: 50.0,      // mm
   charWidth: 35.0,       // mm
   bridgeWidth: 4.0,      // mm
+  plateWidth: 300.0,     // mm
+  plateHeight: 200.0,    // mm
   plateThickness: 5.0,   // mm
   platePadding: 10.0,    // mm
   charSpacing: 10.0,     // mm
-  cols: 10,              // config cols
   
   // CNC limits
   cncWidth: 300.0,
@@ -70,6 +71,8 @@ const elements = {
   paramCharHeight: document.getElementById('param-char-height'),
   paramCharWidth: document.getElementById('param-char-width'),
   paramBridgeWidth: document.getElementById('param-bridge-width'),
+  paramPlateWidth: document.getElementById('param-plate-width'),
+  paramPlateHeight: document.getElementById('param-plate-height'),
   paramPlateThickness: document.getElementById('param-plate-thickness'),
   paramPlatePadding: document.getElementById('param-plate-padding'),
   paramCharSpacing: document.getElementById('param-char-spacing'),
@@ -80,6 +83,8 @@ const elements = {
   valCharHeight: document.getElementById('val-char-height'),
   valCharWidth: document.getElementById('val-char-width'),
   valBridgeWidth: document.getElementById('val-bridge-width'),
+  valPlateWidth: document.getElementById('val-plate-width'),
+  valPlateHeight: document.getElementById('val-plate-height'),
   valPlateThickness: document.getElementById('val-plate-thickness'),
   valPlatePadding: document.getElementById('val-plate-padding'),
   valCharSpacing: document.getElementById('val-char-spacing'),
@@ -130,6 +135,8 @@ function setupEventListeners() {
     { el: elements.paramCharHeight, key: 'charHeight', valEl: elements.valCharHeight, suffix: ' mm' },
     { el: elements.paramCharWidth, key: 'charWidth', valEl: elements.valCharWidth, suffix: ' mm' },
     { el: elements.paramBridgeWidth, key: 'bridgeWidth', valEl: elements.valBridgeWidth, suffix: ' mm' },
+    { el: elements.paramPlateWidth, key: 'plateWidth', valEl: elements.valPlateWidth, suffix: ' mm' },
+    { el: elements.paramPlateHeight, key: 'plateHeight', valEl: elements.valPlateHeight, suffix: ' mm' },
     { el: elements.paramPlateThickness, key: 'plateThickness', valEl: elements.valPlateThickness, suffix: ' mm' },
     { el: elements.paramPlatePadding, key: 'platePadding', valEl: elements.valPlatePadding, suffix: ' mm' },
     { el: elements.paramCharSpacing, key: 'charSpacing', valEl: elements.valCharSpacing, suffix: ' mm' },
@@ -226,6 +233,12 @@ function updateSlidersFromState() {
   
   elements.paramBridgeWidth.value = state.bridgeWidth;
   elements.valBridgeWidth.textContent = state.bridgeWidth.toFixed(1) + ' mm';
+  
+  elements.paramPlateWidth.value = state.plateWidth;
+  elements.valPlateWidth.textContent = state.plateWidth.toFixed(1) + ' mm';
+  
+  elements.paramPlateHeight.value = state.plateHeight;
+  elements.valPlateHeight.textContent = state.plateHeight.toFixed(1) + ' mm';
   
   elements.paramPlateThickness.value = state.plateThickness;
   elements.valPlateThickness.textContent = state.plateThickness.toFixed(1) + ' mm';
@@ -605,25 +618,27 @@ function computeLayout() {
   
   if (numChars === 0) {
     return {
-      plateWidth: 20,
-      plateHeight: 20,
+      plateWidth: state.plateWidth || 300,
+      plateHeight: state.plateHeight || 200,
       holes: [],
       numChars: 0
     };
   }
   
-  // Grid layout
-  let cols = state.cols;
+  // Grid layout: dynamically calculate columns to fit within the plate width
+  const availW = (state.plateWidth || 300) - 2 * state.platePadding;
+  const unitW = state.charWidth + state.charSpacing;
+  let cols = Math.max(1, Math.floor((availW + state.charSpacing) / unitW));
   
-  // If custom text is short, make it single row
-  if (state.customText.trim().length > 0 && numChars <= cols) {
+  // If custom text is short and fits in fewer columns, reduce columns
+  if (state.customText.trim().length > 0 && numChars < cols) {
     cols = numChars;
   }
   
   const rows = Math.ceil(numChars / cols);
   
-  const plateWidth = 2 * state.platePadding + cols * state.charWidth + (cols - 1) * state.charSpacing;
-  const plateHeight = 2 * state.platePadding + rows * state.charHeight + (rows - 1) * state.charSpacing;
+  const plateWidth = state.plateWidth || 300;
+  const plateHeight = state.plateHeight || 200;
   
   const holes = [];
   
@@ -636,7 +651,8 @@ function computeLayout() {
     const row = Math.floor(idx / cols);
     
     const xBox = state.platePadding + col * (state.charWidth + state.charSpacing);
-    const yBox = state.platePadding + (rows - 1 - row) * (state.charHeight + state.charSpacing);
+    // Align rows from top to bottom
+    const yBox = plateHeight - state.platePadding - (row + 1) * state.charHeight - row * state.charSpacing;
     
     // 1. Get subdivided segments in normalized grid coordinates
     const splitSegs = getSubdividedSegments(charData.segments, charData.bridges || [], state.charHeight, state.bridgeWidth);
